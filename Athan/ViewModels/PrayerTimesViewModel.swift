@@ -58,4 +58,18 @@ class PrayerTimesViewModel: ObservableObject {
             }
         }
     }
+    
+    func time(for prayer: String) -> Date {
+        switch prayer {
+        case Prayers.FAJR.rawValue: return prayerTimesModel.fajr
+        case Prayers.SUNRISE.rawValue: return prayerTimesModel.sunrise
+        case Prayers.DHUHR.rawValue: return prayerTimesModel.dhuhr
+        case Prayers.ASR.rawValue: return prayerTimesModel.asr
+        case Prayers.MAGHRIB.rawValue: return prayerTimesModel.maghrib
+        case Prayers.ISHA.rawValue: return prayerTimesModel.isha
+        case Prayers.QIYAM.rawValue: return prayerTimesModel.qiyam
+        default: return Date()
+        }
+    }
+
 }

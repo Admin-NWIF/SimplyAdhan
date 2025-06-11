@@ -75,20 +75,42 @@ struct PrayerTimesView: View {
 
                             Spacer()
 
+                            // Logic for whent he user toggles notifications
                             Button(action: {
-                                notificationsEnabled[prayer.name]?.toggle()
-                                if notificationsEnabled[prayer.name] == false {
-                                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [prayer.name])
+                                prayerTimesVM.notificationsEnabled[prayer.name]?.toggle()
+                                if prayerTimesVM.notificationsEnabled[prayer.name] == false {
+                                    print(prayer.name)
+                                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["\(prayer.name)_\(prayerTimesVM.time(for: prayer.name))"])
+                                }
+                                else if prayerTimesVM.notificationsEnabled[prayer.name] == true {
+                                    let formatter = DateFormatter()
+                                    formatter.timeStyle = .short
+                                    formatter.timeZone = TimeZone(identifier: model.options?.timezone ?? TimeZone.current.identifier)
+                                    
+                                    let prayerTime = prayerTimesVM.time(for: prayer.name)
+                                    let body = "It's time to pray \(prayer.name) at \(formatter.string(from: prayerTime))"
+                                    
+                                    let content = UNMutableNotificationContent()
+                                    content.title = prayer.name
+                                    content.body = body
+                                    content.sound = .default
+                                    
+                                    let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: prayerTime)
+                                    let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+                                    
+                                    let request = UNNotificationRequest(identifier: "\(prayer.name)_\(prayerTime)", content: content, trigger: trigger)
+                                    
+                                    UNUserNotificationCenter.current().add(request)
                                 }
                             }) {
-                                Image(systemName: (notificationsEnabled[prayer.name] ?? true) ? "bell.fill" : "bell.slash.fill")
+                                Image(systemName: (prayerTimesVM.notificationsEnabled[prayer.name] ?? true) ? "bell.fill" : "bell.slash.fill")
                                     .foregroundColor(.blue)
                             }
 
                             Button(action: {
-                                audioEnabled[prayer.name]?.toggle()
+                                prayerTimesVM.audioEnabled[prayer.name]?.toggle()
                             }) {
-                                Image(systemName: (audioEnabled[prayer.name] ?? true) ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                                Image(systemName: (prayerTimesVM.audioEnabled[prayer.name] ?? true) ? "speaker.wave.2.fill" : "speaker.slash.fill")
                                     .foregroundColor(.blue)
                             }
                         }
