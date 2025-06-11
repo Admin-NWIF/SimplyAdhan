@@ -91,10 +91,12 @@ class PrayerRefreshManager: ObservableObject {
 
         let prayers = [
             (Prayers.FAJR.rawValue, model.fajr),
+            (Prayers.SUNRISE.rawValue, model.sunrise),
             (Prayers.DHUHR.rawValue, model.dhuhr),
             (Prayers.ASR.rawValue, model.asr),
             (Prayers.MAGHRIB.rawValue, model.maghrib),
-            (Prayers.ISHA.rawValue, model.isha)
+            (Prayers.ISHA.rawValue, model.isha),
+            (Prayers.QIYAM.rawValue, model.qiyam)
         ]
 
         for (title, time) in prayers {
