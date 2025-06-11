@@ -15,7 +15,7 @@ struct PrayerTimesView: View {
     @EnvironmentObject var refreshManager: PrayerRefreshManager
     @EnvironmentObject var prayerTimesVM: PrayerTimesViewModel
     @EnvironmentObject var prayerTimesModel: PrayerTimesModel
-//    @State private var prayerModel: PrayerTimesModel?
+//    @State private var prayerTimesModel: PrayerTimesModel?
     @State private var notificationsEnabled: [String: Bool] = [:]
     @State private var audioEnabled: [String: Bool] = [:]
     @State private var showPrayerAlert = false
@@ -53,6 +53,11 @@ struct PrayerTimesView: View {
                     .background(Color(red: 0.0, green: 101/255, blue: 66/255))
                     .cornerRadius(12)
                     .padding(.horizontal)
+                    .onAppear(){
+                        print(prayerTimesModel.fajr)
+                        print(Date())
+                        print(prayerTimesModel.fajr == Date())
+                    }
 
                     ForEach(prayerTiles(from: model), id: \ .name) { prayer in
                         HStack {
@@ -96,8 +101,8 @@ struct PrayerTimesView: View {
                     ProgressView("Loading prayer times…")
                         .padding()
                         .onAppear(){
-                            print(prayerTimesModel.fajr)
-                            print(prayerTimesModel.dhuhr)
+//                            print(prayerTimesModel!.fajr)
+//                            print(prayerTimesModel!.dhuhr)
                         }
                 }
             }

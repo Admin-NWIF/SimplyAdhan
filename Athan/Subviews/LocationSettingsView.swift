@@ -13,6 +13,8 @@ struct LocationSettingsView: View {
     @EnvironmentObject var prayerSettings: PrayerSettings
     @EnvironmentObject var refreshManager: PrayerRefreshManager
     @EnvironmentObject var citySearchManager: CitySearchManager
+    @EnvironmentObject var prayerTimesVM: PrayerTimesViewModel
+
     @State private var searchText = ""
     @State private var searchResults: [City] = []
     @State private var searchDebounceWorkItem: DispatchWorkItem?
@@ -77,19 +79,45 @@ struct LocationSettingsView: View {
                     let lon = result.wrappedValue.longitude
                     
                     prayerSettings.coordinates = Coordinates(latitude: lat, longitude: lon)
+//                    getTimeZoneFromCoordinates(Coordinates(latitude: lat, longitude: lon)) { timeZone in
+//                        if let tz = timeZone {
+//                            prayerSettings.timezone = tz
+//                            refreshManager.fetchAndSchedule(for: Coordinates(latitude: lat, longitude: lon), timezone: tz, scheduleNotifications: true, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
+//                            refreshManager.resetMidnightRefresh(for: Coordinates(latitude: lat, longitude: lon), timezone: tz, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
+//                            print("changed tz")
+//                        } else {
+//                            // fallback to device timezone if needed
+//                            prayerSettings.timezone = TimeZone.current.identifier
+//                            print("fallback")
+//                        }
+//                    }
                     getTimeZoneFromCoordinates(Coordinates(latitude: lat, longitude: lon)) { timeZone in
-                        if let tz = timeZone {
-                            prayerSettings.timezone = tz
-                            refreshManager.fetchAndSchedule(for: Coordinates(latitude: lat, longitude: lon), timezone: tz, scheduleNotifications: true, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
-                            refreshManager.resetMidnightRefresh(for: Coordinates(latitude: lat, longitude: lon), timezone: tz, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
-                            print("changed tz")
-                        } else {
-                            // fallback to device timezone if needed
-                            prayerSettings.timezone = TimeZone.current.identifier
-                            print("fallback")
-                        }
+                        let tz = timeZone ?? TimeZone.current.identifier
+                        prayerSettings.timezone = tz
+                        
+                        // ✅ Update PrayerTimesModel for UI
+                        prayerTimesVM.fetchPrayerTimes(
+                            coordinates: Coordinates(latitude: lat, longitude: lon),
+                            timezone: tz,
+                            madhab: prayerSettings.madhab,
+                            method: prayerSettings.calculationMethod
+                        )
+                        
+                        refreshManager.fetchAndSchedule(
+                            for: Coordinates(latitude: lat, longitude: lon),
+                            timezone: tz,
+                            scheduleNotifications: true,
+                            madhab: prayerSettings.madhab,
+                            method: prayerSettings.calculationMethod
+                        )
+                        
+                        refreshManager.resetMidnightRefresh(
+                            for: Coordinates(latitude: lat, longitude: lon),
+                            timezone: tz,
+                            madhab: prayerSettings.madhab,
+                            method: prayerSettings.calculationMethod
+                        )
                     }
-                    
                     // Dismiss view
                     dismiss()
                 } label: {

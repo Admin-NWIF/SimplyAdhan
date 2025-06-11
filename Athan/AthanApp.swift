@@ -25,9 +25,13 @@ struct AthanApp: App {
 
     
     init() {
+        let prayerTimesModel = PrayerTimesModel()
+        _prayerTimesModel = StateObject(wrappedValue: prayerTimesModel)
+        
         let settings = PrayerSettings()
         _prayerSettings = StateObject(wrappedValue: settings)
         _refreshManager = StateObject(wrappedValue: PrayerRefreshManager(
+            model: prayerTimesModel,
             coordinates: settings.coordinates,
             timezone: settings.timezone,
             madhab: settings.madhab,
@@ -35,9 +39,6 @@ struct AthanApp: App {
         ))
         _citySearchManager = StateObject(wrappedValue: CitySearchManager())
         _locationManager = StateObject(wrappedValue: LocationManager())
-        
-        let prayerTimesModel = PrayerTimesModel()
-        _prayerTimesModel = StateObject(wrappedValue: prayerTimesModel)
         
         let handler = PrayerTimesHandler()
         _prayerTimesVM = StateObject(wrappedValue: PrayerTimesViewModel(handler: handler, prayerTimesModel: prayerTimesModel))

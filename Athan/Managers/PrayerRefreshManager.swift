@@ -13,9 +13,10 @@ import SwiftUICore
 class PrayerRefreshManager: ObservableObject {
     private var timer: Timer?
     let handler = PrayerTimesHandler()
-    @Published var model: PrayerTimesModel?
+    @ObservedObject var model: PrayerTimesModel
 
-    init(coordinates: Coordinates, timezone: String, scheduleNotifications: Bool = true, madhab: Madhab, method: String) {
+    init(model: PrayerTimesModel, coordinates: Coordinates, timezone: String, scheduleNotifications: Bool = true, madhab: Madhab, method: String) {
+        self.model = model
         fetchAndSchedule(for: coordinates, timezone: timezone, scheduleNotifications: true, madhab: madhab, method: method)
         scheduleMidnightRefresh(coordinates: coordinates, timezone: timezone, scheduleNotifications: scheduleNotifications, madhab: madhab, method: method)
     }
@@ -56,7 +57,17 @@ class PrayerRefreshManager: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let model):
-                    self.model = model
+                    // ✅ Copy values into shared model
+                    self.model.date = model.date
+                    self.model.fajr = model.fajr
+                    self.model.sunrise = model.sunrise
+                    self.model.dhuhr = model.dhuhr
+                    self.model.asr = model.asr
+                    self.model.maghrib = model.maghrib
+                    self.model.isha = model.isha
+                    self.model.qiyam = model.qiyam
+                    self.model.coordinates = model.coordinates
+                    self.model.options = model.options
                     if scheduleNotifications {
                         self.scheduleAllNotifications(for: model)
                     }
@@ -73,6 +84,7 @@ class PrayerRefreshManager: ObservableObject {
     }
 
     private func scheduleAllNotifications(for model: PrayerTimesModel) {
+        removeAllPendingNotifications()
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         formatter.timeZone = TimeZone(identifier: model.options?.timezone ?? TimeZone.current.identifier)

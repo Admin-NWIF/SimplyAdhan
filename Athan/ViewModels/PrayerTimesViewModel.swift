@@ -38,7 +38,16 @@ class PrayerTimesViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let model):
-                    self.prayerTimesModel = model
+                    self.prayerTimesModel.date = model.date
+                    self.prayerTimesModel.fajr = model.fajr
+                    self.prayerTimesModel.sunrise = model.sunrise
+                    self.prayerTimesModel.dhuhr = model.dhuhr
+                    self.prayerTimesModel.asr = model.asr
+                    self.prayerTimesModel.maghrib = model.maghrib
+                    self.prayerTimesModel.isha = model.isha
+                    self.prayerTimesModel.qiyam = model.qiyam
+                    self.prayerTimesModel.coordinates = model.coordinates
+                    self.prayerTimesModel.options = model.options
                     Prayers.allCases.forEach {
                         self.notificationsEnabled[$0.rawValue] = true
                         self.audioEnabled[$0.rawValue] = true
