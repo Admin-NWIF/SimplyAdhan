@@ -79,18 +79,7 @@ struct LocationSettingsView: View {
                     let lon = result.wrappedValue.longitude
                     
                     prayerSettings.coordinates = Coordinates(latitude: lat, longitude: lon)
-//                    getTimeZoneFromCoordinates(Coordinates(latitude: lat, longitude: lon)) { timeZone in
-//                        if let tz = timeZone {
-//                            prayerSettings.timezone = tz
-//                            refreshManager.fetchAndSchedule(for: Coordinates(latitude: lat, longitude: lon), timezone: tz, scheduleNotifications: true, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
-//                            refreshManager.resetMidnightRefresh(for: Coordinates(latitude: lat, longitude: lon), timezone: tz, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
-//                            print("changed tz")
-//                        } else {
-//                            // fallback to device timezone if needed
-//                            prayerSettings.timezone = TimeZone.current.identifier
-//                            print("fallback")
-//                        }
-//                    }
+
                     getTimeZoneFromCoordinates(Coordinates(latitude: lat, longitude: lon)) { timeZone in
                         let tz = timeZone ?? TimeZone.current.identifier
                         prayerSettings.timezone = tz
