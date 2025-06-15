@@ -15,6 +15,8 @@ struct PrayerTimesView: View {
     @EnvironmentObject var refreshManager: PrayerRefreshManager
     @EnvironmentObject var prayerTimesVM: PrayerTimesViewModel
     @EnvironmentObject var prayerTimesModel: PrayerTimesModel
+    @Environment(\.scenePhase) var scenePhase
+    
 //    @State private var prayerTimesModel: PrayerTimesModel?
     @State private var notificationsEnabled: [String: Bool] = [:]
     @State private var audioEnabled: [String: Bool] = [:]
@@ -53,11 +55,6 @@ struct PrayerTimesView: View {
                     .background(Color(red: 0.0, green: 101/255, blue: 66/255))
                     .cornerRadius(12)
                     .padding(.horizontal)
-                    .onAppear(){
-                        print(prayerTimesModel.fajr)
-                        print(Date())
-                        print(prayerTimesModel.fajr == Date())
-                    }
 
                     ForEach(prayerTiles(from: model), id: \ .name) { prayer in
                         HStack {
@@ -122,10 +119,6 @@ struct PrayerTimesView: View {
                 } else {
                     ProgressView("Loading prayer times…")
                         .padding()
-                        .onAppear(){
-//                            print(prayerTimesModel!.fajr)
-//                            print(prayerTimesModel!.dhuhr)
-                        }
                 }
             }
         }
@@ -184,6 +177,11 @@ struct PrayerTimesView: View {
                     print("🔸 Trigger: \(String(describing: request.trigger))")
                     print("———————")
                 }
+            }
+        }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                locationManager.startUpdatingLocation()
             }
         }
         .alert(isPresented: $showPrayerAlert) {

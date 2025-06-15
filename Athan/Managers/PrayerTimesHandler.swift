@@ -122,33 +122,33 @@ struct PrayerTimesHandler {
         }.resume()
     }
     
-    func getCoordinatesFromDeviceLocation(completion: @escaping (Result<Coordinates, Error>) -> Void) {
-        class LocationDelegate: NSObject, CLLocationManagerDelegate {
-            let completion: (Result<Coordinates, Error>) -> Void
-            
-            init(completion: @escaping (Result<Coordinates, Error>) -> Void) {
-                self.completion = completion
-            }
-            
-            func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-                if let location = locations.first {
-                    let coords = Coordinates(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-                    completion(.success(coords))
-                    manager.stopUpdatingLocation()
-                }
-            }
-            
-            func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-                completion(.failure(error))
-            }
-        }
-        
-        let manager = CLLocationManager()
-        let delegate = LocationDelegate(completion: completion)
-        manager.delegate = delegate
-        manager.requestWhenInUseAuthorization()
-        manager.startUpdatingLocation()
-        
-        // To persist delegate, you may need to store it in a property in a view model or similar.
-    }
+//    func getCoordinatesFromDeviceLocation(completion: @escaping (Result<Coordinates, Error>) -> Void) {
+//        class LocationDelegate: NSObject, CLLocationManagerDelegate {
+//            let completion: (Result<Coordinates, Error>) -> Void
+//            
+//            init(completion: @escaping (Result<Coordinates, Error>) -> Void) {
+//                self.completion = completion
+//            }
+//            
+//            func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+//                if let location = locations.first {
+//                    let coords = Coordinates(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+//                    completion(.success(coords))
+//                    manager.stopUpdatingLocation()
+//                }
+//            }
+//            
+//            func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+//                completion(.failure(error))
+//            }
+//        }
+//        
+//        let manager = CLLocationManager()
+//        let delegate = LocationDelegate(completion: completion)
+//        manager.delegate = delegate
+//        manager.requestWhenInUseAuthorization()
+//        manager.startUpdatingLocation()
+//        
+//        // To persist delegate, you may need to store it in a property in a view model or similar.
+//    }
 }
