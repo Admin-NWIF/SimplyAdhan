@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UserNotifications
+import CoreLocation
 
 @main
 struct AthanApp: App {

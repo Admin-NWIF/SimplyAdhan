@@ -16,20 +16,41 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     override init() {
         super.init()
+        if UserDefaults.standard.bool(forKey: "setLocationManually") {
+            return
+        }
         manager.delegate = self
+        requestAuthorization()
+        startUpdatingLocation()
+    }
+
+    func requestAuthorization() {
         manager.requestWhenInUseAuthorization()
+    }
+
+    func startUpdatingLocation() {
         manager.startUpdatingLocation()
     }
 
+    func stopUpdatingLocation() {
+        manager.stopUpdatingLocation()
+    }
+
+    // MARK: - Delegate Methods
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        location = locations.last?.coordinate
-//        manager.stopUpdatingLocation()
+        if let lastLocation = locations.last {
+            location = lastLocation.coordinate
+            print("Got location: \(location!)")
+        }
+        stopUpdatingLocation() // stop after getting one location
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         self.error = error
+        stopUpdatingLocation()
     }
-    
+
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
@@ -39,5 +60,4 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             hasLocationPermission = false
         }
     }
-
 }
