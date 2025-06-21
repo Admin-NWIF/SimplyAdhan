@@ -24,6 +24,8 @@ struct SettingsView: View {
     @EnvironmentObject var citySearchManager: CitySearchManager
     @EnvironmentObject var prayerSettings: PrayerSettings
     @EnvironmentObject var refreshManager: PrayerRefreshManager
+    
+    @AppStorage("setLocationManually") private var setLocationManually = false
 
     let methods = [
         "ISNA", "Muslim World League", "Egyptian", "Karachi",
@@ -35,8 +37,12 @@ struct SettingsView: View {
         NavigationView {
             List {
                 Section {
-                    NavigationLink(destination: LocationSettingsView()) {
-                        Label("Location", systemImage: "location.circle")
+                    Toggle("Set location manually", isOn: $setLocationManually)
+                    
+                    if setLocationManually {
+                        NavigationLink(destination: LocationSettingsView()) {
+                            Label("Location", systemImage: "location.circle")
+                        }
                     }
 
                     NavigationLink(destination: AboutView()) {

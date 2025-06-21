@@ -16,6 +16,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     override init() {
         super.init()
+        if UserDefaults.standard.bool(forKey: "setLocationManually") {
+            return
+        }
         manager.delegate = self
         requestAuthorization()
         startUpdatingLocation()

@@ -126,6 +126,10 @@ struct PrayerTimesView: View {
         .onReceive(locationManager.$location.compactMap { $0 }) { coords in
             let location = CLLocation(latitude: coords.latitude, longitude: coords.longitude)
             let geocoder = CLGeocoder()
+            
+            if UserDefaults.standard.bool(forKey: "setLocationManually") {
+                return
+            }
 
             // Fetch both timezone and city first
             geocoder.reverseGeocodeLocation(location) { placemarks, error in
@@ -180,7 +184,7 @@ struct PrayerTimesView: View {
             }
         }
         .onChange(of: scenePhase) { newPhase in
-            if newPhase == .active {
+            if newPhase == .active && !UserDefaults.standard.bool(forKey: "setLocationManually") {
                 locationManager.startUpdatingLocation()
             }
         }
