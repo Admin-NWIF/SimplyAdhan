@@ -22,6 +22,9 @@ struct AthanApp: App {
     
     @State private var didRegisterNotificationObserver = false
     @State private var hasCompletedSetup = UserDefaults.standard.string(forKey: "selectedCity") != nil
+    @State private var showPrayerAlert = false
+    @State private var currentPrayer = ""
+
     @Environment(\.scenePhase) private var scenePhase
 
     
@@ -64,15 +67,24 @@ struct AthanApp: App {
                                 queue: .main
                             ) { notification in
                                 let prayer = notification.userInfo?["prayer"] as? String ?? ""
-                                
-                                if prayer == Prayers.FAJR.rawValue {
-                                    AudioManager.shared.playAdhan(prayer: Prayers.FAJR.rawValue)
-                                } else {
-                                    AudioManager.shared.playAdhan(prayer: Prayers.DHUHR.rawValue)
+                                let isValidPrayer = AudioManager.shared.playAdhan(prayer: prayer)
+                                if isValidPrayer {
+                                    showPrayerAlert = true
+                                    currentPrayer = prayer
                                 }
                             }
                             didRegisterNotificationObserver = true
                         }
+                    }
+                    .alert(isPresented: $showPrayerAlert) {
+                        Alert(
+                            title: Text("It's time to pray \(currentPrayer)"),
+                            message: Text("May Allah accept it."),
+                            dismissButton: .default(Text("Stop")) {
+                                AudioManager.shared.stopAdhan()
+                                showPrayerAlert = false
+                            }
+                        )
                     }
             } else {
                 SelectCityView(hasCompletedSetup: $hasCompletedSetup)

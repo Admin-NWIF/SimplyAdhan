@@ -17,14 +17,12 @@ struct PrayerTimesView: View {
     @EnvironmentObject var prayerTimesModel: PrayerTimesModel
     @Environment(\.scenePhase) var scenePhase
     
-//    @State private var prayerTimesModel: PrayerTimesModel?
     @State private var notificationsEnabled: [String: Bool] = [:]
     @State private var audioEnabled: [String: Bool] = [:]
-    @State private var showPrayerAlert = false
     @State private var currentPrayerName = ""
     @State private var showLocationSettings = false
-    
-    let adhanHandler = AdhanHandler()
+    @State private var toastMessage: String = ""
+    @State private var showToast: Bool = false
 
     var body: some View {
         ScrollView {
@@ -72,11 +70,44 @@ struct PrayerTimesView: View {
 
                             Spacer()
 
-                            // Logic for whent he user toggles notifications
+                            if prayer.name != Prayers.SUNRISE.rawValue && prayer.name != Prayers.QIYAM.rawValue {
+                                // Logic for when the user toggles audio
+                                Button(action: {
+                                    let isOn = prayerTimesVM.audioEnabled[prayer.name] ?? true
+                                    prayerTimesVM.audioEnabled[prayer.name]?.toggle()
+                                    
+                                    toastMessage = "\(prayer.name) adhan audio \(isOn ? "off" : "on")"
+                                    showToast = true
+
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        showToast = false
+                                    }
+                                }) {
+                                    Image(systemName: (prayerTimesVM.audioEnabled[prayer.name] ?? true) ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                                        .foregroundColor(.blue)
+                                }
+                            } else {
+                                Button(action: {
+                                    // No action for SUNRISE or QIYAM
+                                }) {
+                                    Image(systemName: "speaker.slash.fill")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            
+                            // Logic for when the user toggles notifications
                             Button(action: {
+                                let isOn = prayerTimesVM.notificationsEnabled[prayer.name] ?? true
                                 prayerTimesVM.notificationsEnabled[prayer.name]?.toggle()
+                                
+                                toastMessage = "\(prayer.name) notification \(isOn ? "off" : "on")"
+                                showToast = true
+
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    showToast = false
+                                }
+                                
                                 if prayerTimesVM.notificationsEnabled[prayer.name] == false {
-                                    print(prayer.name)
                                     UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["\(prayer.name)_\(prayerTimesVM.time(for: prayer.name))"])
                                 }
                                 else if prayerTimesVM.notificationsEnabled[prayer.name] == true {
@@ -100,21 +131,16 @@ struct PrayerTimesView: View {
                                     UNUserNotificationCenter.current().add(request)
                                 }
                             }) {
-                                Image(systemName: (prayerTimesVM.notificationsEnabled[prayer.name] ?? true) ? "bell.fill" : "bell.slash.fill")
-                                    .foregroundColor(.blue)
-                            }
-
-                            Button(action: {
-                                prayerTimesVM.audioEnabled[prayer.name]?.toggle()
-                            }) {
-                                Image(systemName: (prayerTimesVM.audioEnabled[prayer.name] ?? true) ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                                    .foregroundColor(.blue)
+                                    Image(systemName: (prayerTimesVM.notificationsEnabled[prayer.name] ?? true) ? "bell.fill" : "bell.slash.fill")
+                                        .foregroundColor(.blue)
+                                
                             }
                         }
                         .padding()
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
                         .padding(.horizontal)
+                        
                     }
                 } else {
                     ProgressView("Loading prayer times…")
@@ -172,31 +198,33 @@ struct PrayerTimesView: View {
         }
 
         .onAppear {
-            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-                print("🔔 Pending Notifications: \(requests.count)")
-                for request in requests {
-                    print("🔹 Identifier: \(request.identifier)")
-                    print("🔸 Title: \(request.content.title)")
-                    print("🔸 Body: \(request.content.body)")
-                    print("🔸 Trigger: \(String(describing: request.trigger))")
-                    print("———————")
-                }
-            }
+//            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+//                print("🔔 Pending Notifications: \(requests.count)")
+//                for request in requests {
+//                    print("🔹 Identifier: \(request.identifier)")
+//                    print("🔸 Title: \(request.content.title)")
+//                    print("🔸 Body: \(request.content.body)")
+//                    print("🔸 Trigger: \(String(describing: request.trigger))")
+//                    print("———————")
+//                }
+//            }
+            prayerTimesVM.audioEnabled[Prayers.SUNRISE.rawValue] = false
+            prayerTimesVM.audioEnabled[Prayers.QIYAM.rawValue] = false
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active && !UserDefaults.standard.bool(forKey: "setLocationManually") {
                 locationManager.startUpdatingLocation()
             }
         }
-        .alert(isPresented: $showPrayerAlert) {
-            Alert(
-                title: Text("It's time to pray \(currentPrayerName)"),
-                message: Text("May Allah accept it."),
-                dismissButton: .default(Text("Stop")) {
-                    AudioManager.shared.stopAdhan()
+        .overlay(
+            Group {
+                if showToast {
+                    ToastView(message: toastMessage)
+                        .padding(.bottom, 40)
                 }
-            )
-        }
+            },
+            alignment: .bottom
+        )
     }
 
     func formattedDate(_ date: Date) -> String {
@@ -220,41 +248,6 @@ struct PrayerTimesView: View {
             (Prayers.QIYAM.rawValue, formatter.string(from: model.qiyam), PrayerIcons.QIYAM.rawValue)
         ]
     }
-    
-//    func fetchPrayerTimesFromLocation(_ coord: Coordinates) {
-//        prayerTimesHandler.getPrayerTimes(
-//            for: coord,
-//            date: Date(),
-//            madhab: prayerSettings.madhab,
-//            method: prayerSettings.calculationMethod,
-//            timezone: prayerSettings.timezone
-//        ) { result in
-//            DispatchQueue.main.async {
-//                switch result {
-//                case .success(let model):
-//                    prayerTimesModel = model
-//                    for name in Prayers.allCases {
-//                        notificationsEnabled[name.rawValue] = true
-//                        audioEnabled[name.rawValue] = true
-//                    }
-//                    
-//                    adhanHandler.onAdhanTriggered = { prayerName in
-//                        currentPrayerName = prayerName
-//                        showPrayerAlert = true
-//                    }
-//                    let result = adhanHandler.checkIfShouldPlayAdhan(prayerTimes: model)
-//                    if let prayer = result.prayer {
-//                        if result.shouldPlay == true && audioEnabled[prayer.rawValue] == true {
-//                            AudioManager.shared.playAdhan(prayer: prayer.rawValue)
-//                        }
-//                    }
-//                    
-//                case .failure(let error):
-//                    print(error)
-//                }
-//            }
-//        }
-//    }
 
     func schedulePrayerNotification(title: String, body: String, at date: Date, timezone: String) {
         let content = UNMutableNotificationContent()

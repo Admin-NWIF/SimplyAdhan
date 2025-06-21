@@ -93,14 +93,14 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section {
-                    Button("🔍 Show Scheduled Notifications") {
-                        printScheduledNotifications()
-                    }
-                    NavigationLink(destination: DebugInfoView()) {
-                        Label("DebugInfo", systemImage: "location.square")
-                    }
-                }
+//                Section {
+//                    Button("🔍 Show Scheduled Notifications") {
+//                        printScheduledNotifications()
+//                    }
+//                    NavigationLink(destination: DebugInfoView()) {
+//                        Label("DebugInfo", systemImage: "location.square")
+//                    }
+//                }
                
 
 
