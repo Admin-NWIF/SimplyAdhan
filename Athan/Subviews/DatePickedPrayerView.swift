@@ -4,80 +4,53 @@
 //
 //  Created by Usman Hasan on 6/21/25.
 //
+
 import SwiftUI
 import Foundation
 import Adhan
 
 struct DatePickedPrayerView: View {
     let selectedDate: Date
-    
-    @EnvironmentObject var prayerSettings: PrayerSettings
-//    @EnvironmentObject var prayerTimesModel: PrayerTimesModel
-    @EnvironmentObject var prayerTimesVM: PrayerTimesViewModel
-    
-    var body: some View {
-        
-        let model = PrayerTimesModel()
-        let handler = PrayerTimesHandler()
-        
-        let prayerTimes = handler.getPrayerTimes(for: prayerSettings.coordinates, date: selectedDate, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod, timezone: prayerSettings.timezone) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let returnedModel):
-                    model.date = returnedModel.date
-                    model.fajr = returnedModel.fajr
-                    model.sunrise = returnedModel.sunrise
-                    model.dhuhr = returnedModel.dhuhr
-                    model.asr = returnedModel.asr
-                    model.maghrib = returnedModel.maghrib
-                    model.isha = returnedModel.isha
-                    model.qiyam = returnedModel.qiyam
-                    model.coordinates = returnedModel.coordinates
-                    model.options = returnedModel.options
-                    
-//                    print("Prayer times Model: " + prayerTimesModel.maghrib.description)
-                    print("Local model: " + model.maghrib.description)
-                    print("Returned model: " + returnedModel.maghrib.description)
 
-                case .failure(let error):
-                    print("❌ Failed to fetch prayer times:", error)
-                }
-            }
-        }
-        
-        ScrollView{
-            VStack(spacing: 12){
+    @EnvironmentObject var prayerSettings: PrayerSettings
+    @EnvironmentObject var prayerTimesVM: PrayerTimesViewModel
+
+    @State private var model = PrayerTimesModel()
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 12) {
                 Text(formattedDate(selectedDate))
                     .font(.headline)
                     .padding(.top)
-                
+
                 HStack {
                     Image(systemName: "location.circle.fill")
                         .foregroundColor(.white)
-                    
+
                     VStack(alignment: .leading) {
                         Text("Current City")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
-                        
+
                         Text(prayerSettings.selectedCity)
                             .font(.headline)
                             .foregroundColor(.white)
                     }
-                    
+
                     Spacer()
                 }
                 .padding()
                 .background(Color(red: 0.0, green: 101/255, blue: 66/255))
                 .cornerRadius(12)
                 .padding(.horizontal)
-                
-                ForEach(prayerTiles(from: model), id: \ .name) { prayer in
+
+                ForEach(prayerTiles(from: model), id: \.name) { prayer in
                     HStack {
                         Image(systemName: prayer.icon)
                             .foregroundColor(.blue)
                             .frame(width: 30)
-                        
+
                         VStack(alignment: .leading) {
                             Text(prayer.name)
                                 .font(.headline)
@@ -94,13 +67,32 @@ struct DatePickedPrayerView: View {
                 }
             }
         }
+        .onAppear {
+            let handler = PrayerTimesHandler()
+            handler.getPrayerTimes(
+                for: prayerSettings.coordinates,
+                date: selectedDate,
+                madhab: prayerSettings.madhab,
+                method: prayerSettings.calculationMethod,
+                timezone: prayerSettings.timezone
+            ) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let returnedModel):
+                        model = returnedModel
+                    case .failure(let error):
+                        print("❌ Failed to fetch prayer times:", error)
+                    }
+                }
+            }
+        }
     }
-    
+
     func prayerTiles(from model: PrayerTimesModel) -> [(name: String, time: String, icon: String)] {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         formatter.timeZone = TimeZone(identifier: model.options?.timezone ?? TimeZone.current.identifier)
-        
+
         return [
             (Prayers.FAJR.rawValue, formatter.string(from: model.fajr), PrayerIcons.FAJR.rawValue),
             (Prayers.SUNRISE.rawValue, formatter.string(from: model.sunrise), PrayerIcons.SUNRISE.rawValue),
@@ -111,7 +103,7 @@ struct DatePickedPrayerView: View {
             (Prayers.QIYAM.rawValue, formatter.string(from: model.qiyam), PrayerIcons.QIYAM.rawValue)
         ]
     }
-    
+
     func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
