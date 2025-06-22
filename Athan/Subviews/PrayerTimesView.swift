@@ -21,43 +21,62 @@ struct PrayerTimesView: View {
     @State private var showLocationSettings = false
     @State private var toastMessage: String = ""
     @State private var showToast: Bool = false
-
+    @State private var selectedDate: Date = Date()
+    @State private var showingDatePicker = false
+    @State private var previousDate: Date = Date()
+    @State private var showingDatePickedPrayerPreview = false
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
                 let model = prayerTimesModel
                 if model != nil {
-                    Text(formattedDate(model.date))
-                        .font(.headline)
-                        .padding(.top)
-
+                    ZStack {
+                        Text(formattedDate(model.date))
+                            .font(.headline)
+                            .padding(.top)
+                        
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                showingDatePicker.toggle()
+                            }) {
+                                Image(systemName: "calendar")
+                                    .font(.title2)
+                            }
+                            .padding(.trailing)
+                        }
+                    }
+                    
+                    
+                    
                     HStack {
                         Image(systemName: "location.circle.fill")
                             .foregroundColor(.white)
-
+                        
                         VStack(alignment: .leading) {
                             Text("Current City")
                                 .font(.caption)
                                 .foregroundColor(.white.opacity(0.8))
-
+                            
                             Text(prayerSettings.selectedCity)
                                 .font(.headline)
                                 .foregroundColor(.white)
                         }
-
+                        
                         Spacer()
                     }
                     .padding()
                     .background(Color(red: 0.0, green: 101/255, blue: 66/255))
                     .cornerRadius(12)
                     .padding(.horizontal)
-
+                    
                     ForEach(prayerTiles(from: model), id: \ .name) { prayer in
                         HStack {
                             Image(systemName: prayer.icon)
                                 .foregroundColor(.blue)
                                 .frame(width: 30)
-
+                            
                             VStack(alignment: .leading) {
                                 Text(prayer.name)
                                     .font(.headline)
@@ -65,9 +84,9 @@ struct PrayerTimesView: View {
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
                             }
-
+                            
                             Spacer()
-
+                            
                             if prayer.name != Prayers.SUNRISE.rawValue && prayer.name != Prayers.QIYAM.rawValue {
                                 // Logic for when the user toggles audio
                                 Button(action: {
@@ -75,7 +94,7 @@ struct PrayerTimesView: View {
                                     
                                     toastMessage = "\(prayer.name) adhan audio \(isOn ? "off" : "on")"
                                     showToast = true
-
+                                    
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                         showToast = false
                                     }
@@ -98,7 +117,7 @@ struct PrayerTimesView: View {
                                 
                                 toastMessage = "\(prayer.name) notification \(isOn ? "off" : "on")"
                                 showToast = true
-
+                                
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                     showToast = false
                                 }
@@ -129,8 +148,8 @@ struct PrayerTimesView: View {
                                     UNUserNotificationCenter.current().add(request)
                                 }
                             }) {
-                                    Image(systemName: (prayerTimesVM.notificationsEnabled[prayer.name] ?? true) ? "bell.fill" : "bell.slash.fill")
-                                        .foregroundColor(.blue)
+                                Image(systemName: (prayerTimesVM.notificationsEnabled[prayer.name] ?? true) ? "bell.fill" : "bell.slash.fill")
+                                    .foregroundColor(.blue)
                                 
                             }
                         }
@@ -154,11 +173,11 @@ struct PrayerTimesView: View {
             if UserDefaults.standard.bool(forKey: "setLocationManually") {
                 return
             }
-
+            
             // Fetch both timezone and city first
             geocoder.reverseGeocodeLocation(location) { placemarks, error in
                 guard let placemark = placemarks?.first else { return }
-
+                
                 // Update city
                 if let city = placemark.locality {
                     DispatchQueue.main.async {
@@ -172,7 +191,7 @@ struct PrayerTimesView: View {
                     latitude: coords.latitude,
                     longitude: coords.longitude
                 )
-
+                
                 // Update timezone
                 if let tz = placemark.timeZone {
                     DispatchQueue.main.async {
@@ -181,7 +200,7 @@ struct PrayerTimesView: View {
                         
                         // ✅ Now that timezone is updated, fetch prayer times
                         prayerTimesVM.fetchPrayerTimes(coordinates: prayerSettings.coordinates, timezone: prayerSettings.timezone, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
-//                        fetchPrayerTimesFromLocation(prayerSettings.coordinates)
+                        //                        fetchPrayerTimesFromLocation(prayerSettings.coordinates)
                         
                         // Schedule new notifications
                         refreshManager.removeAllPendingNotifications()
@@ -189,32 +208,35 @@ struct PrayerTimesView: View {
                     }
                 }
             }
-
+            
             // Also store raw coordinates
             UserDefaults.standard.set(coords.latitude, forKey: "latitude")
             UserDefaults.standard.set(coords.longitude, forKey: "longitude")
         }
-
+        
         .onAppear {
-//            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-//                print("🔔 Pending Notifications: \(requests.count)")
-//                for request in requests {
-//                    print("🔹 Identifier: \(request.identifier)")
-//                    print("🔸 Title: \(request.content.title)")
-//                    print("🔸 Body: \(request.content.body)")
-//                    print("🔸 Trigger: \(String(describing: request.trigger))")
-//                    print("———————")
-//                }
-//            }
+            //            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            //                print("🔔 Pending Notifications: \(requests.count)")
+            //                for request in requests {
+            //                    print("🔹 Identifier: \(request.identifier)")
+            //                    print("🔸 Title: \(request.content.title)")
+            //                    print("🔸 Body: \(request.content.body)")
+            //                    print("🔸 Trigger: \(String(describing: request.trigger))")
+            //                    print("———————")
+            //                }
+            //            }
             prayerTimesVM.audioEnabled[Prayers.SUNRISE.rawValue] = false
             prayerTimesVM.audioEnabled[Prayers.QIYAM.rawValue] = false
             prayerTimesVM.loadAudioEnabled()
             prayerTimesVM.loadNotificationsEnabled()
+            
+            selectedDate = Date()
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active && !UserDefaults.standard.bool(forKey: "setLocationManually") {
                 locationManager.startUpdatingLocation()
             }
+            selectedDate = Date()
         }
         .overlay(
             Group {
@@ -225,19 +247,52 @@ struct PrayerTimesView: View {
             },
             alignment: .bottom
         )
-    }
+        .sheet(isPresented: $showingDatePicker) {
+            VStack {
+                DatePicker(
+                    "Select Date",
+                    selection: $selectedDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(GraphicalDatePickerStyle())
+                .padding()
+                
+                .onChange(of: selectedDate) { newDate in
+                    let calendar = Calendar.current
+                    let newDay = calendar.component(.day, from: selectedDate)
+                    let oldDay = calendar.component(.day, from: previousDate)
 
+                    if newDay != oldDay {
+                        showingDatePicker = false
+                    }
+
+                    previousDate = selectedDate
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showingDatePickedPrayerPreview = true
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showingDatePickedPrayerPreview) {
+            // present sub view and route prayer times data
+            DatePickedPrayerView(selectedDate: selectedDate)
+//            showingDatePicker = false
+        }
+    }
+    
     func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
         return formatter.string(from: date)
     }
-
+    
     func prayerTiles(from model: PrayerTimesModel) -> [(name: String, time: String, icon: String)] {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         formatter.timeZone = TimeZone(identifier: model.options?.timezone ?? TimeZone.current.identifier)
-
+        
         return [
             (Prayers.FAJR.rawValue, formatter.string(from: model.fajr), PrayerIcons.FAJR.rawValue),
             (Prayers.SUNRISE.rawValue, formatter.string(from: model.sunrise), PrayerIcons.SUNRISE.rawValue),
@@ -248,21 +303,21 @@ struct PrayerTimesView: View {
             (Prayers.QIYAM.rawValue, formatter.string(from: model.qiyam), PrayerIcons.QIYAM.rawValue)
         ]
     }
-
+    
     func schedulePrayerNotification(title: String, body: String, at date: Date, timezone: String) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
-
+        
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: timezone) ?? .current
-
+        
         let triggerDate = calendar.dateComponents([.hour, .minute], from: date)
         let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-
+        
         let request = UNNotificationRequest(identifier: title, content: content, trigger: trigger)
-
+        
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Notification error: \(error.localizedDescription)")
