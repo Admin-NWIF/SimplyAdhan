@@ -86,24 +86,9 @@ struct SettingsView: View {
                         Label("Adhan", systemImage: "speaker.wave.2.circle.fill")
                             .foregroundColor(.primary)
                         Spacer()
-//                        Picker("", selection: $prayerSettings.calculationMethod) {
-//                            ForEach(methods, id: \.self) { Text($0) }
-//                        }
                         .pickerStyle(MenuPickerStyle())
                     }
                 }
-                
-//                Section {
-//                    Button("🔍 Show Scheduled Notifications") {
-//                        printScheduledNotifications()
-//                    }
-//                    NavigationLink(destination: DebugInfoView()) {
-//                        Label("DebugInfo", systemImage: "location.square")
-//                    }
-//                }
-               
-
-
             }
             .navigationTitle("Settings")
         }

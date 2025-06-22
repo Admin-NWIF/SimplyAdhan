@@ -14,12 +14,26 @@ class PrayerTimesViewModel: ObservableObject {
     private let handler: PrayerTimesHandler
     
     @ObservedObject var prayerTimesModel: PrayerTimesModel
-    @Published var notificationsEnabled: [String: Bool] = [:]
-    @Published var audioEnabled: [String: Bool] = [:]
     
-    init (handler: PrayerTimesHandler, prayerTimesModel: PrayerTimesModel) {
+    @AppStorage("audioEnabled") var audioEnabledData: Data = Data()
+    @Published var audioEnabled: [String: Bool] = [:] {
+        didSet {
+            saveAudioEnabled()
+        }
+    }
+    
+    @AppStorage("notificationsEnabled") var notificationsEnabledData: Data = Data()
+    @Published var notificationsEnabled: [String: Bool] = [:] {
+        didSet {
+            saveNotificationsEnabled()
+        }
+    }
+
+    init(handler: PrayerTimesHandler, prayerTimesModel: PrayerTimesModel) {
         self.handler = handler
         self.prayerTimesModel = prayerTimesModel
+        loadAudioEnabled()
+        loadNotificationsEnabled()
     }
 
     func fetchPrayerTimes(
@@ -48,17 +62,25 @@ class PrayerTimesViewModel: ObservableObject {
                     self.prayerTimesModel.qiyam = model.qiyam
                     self.prayerTimesModel.coordinates = model.coordinates
                     self.prayerTimesModel.options = model.options
+                    
+                    // Only set defaults if missing
                     Prayers.allCases.forEach {
-                        self.notificationsEnabled[$0.rawValue] = true
-                        self.audioEnabled[$0.rawValue] = true
+                        let key = $0.rawValue
+                        if self.notificationsEnabled[key] == nil {
+                            self.notificationsEnabled[key] = true
+                        }
+                        if self.audioEnabled[key] == nil {
+                            self.audioEnabled[key] = true
+                        }
                     }
+
                 case .failure(let error):
                     print("❌ Failed to fetch prayer times:", error)
                 }
             }
         }
     }
-    
+
     func time(for prayer: String) -> Date {
         switch prayer {
         case Prayers.FAJR.rawValue: return prayerTimesModel.fajr
@@ -71,5 +93,52 @@ class PrayerTimesViewModel: ObservableObject {
         default: return Date()
         }
     }
+    
+    func toggleAudio(for prayer: String) -> Bool {
+        if audioEnabled[prayer] != nil {
+            audioEnabled[prayer]?.toggle()
+                return true
+            } else {
+                audioEnabled[prayer] = false
+                return false
+            }
+        }
+    
+    func toggleNotifications(for prayer: String) -> Bool {
+        if notificationsEnabled[prayer] != nil {
+            notificationsEnabled[prayer]?.toggle()
+                return true
+            } else {
+                notificationsEnabled[prayer] = false
+                return false
+        }
+    }
 
+    func loadAudioEnabled() {
+        if let decoded = try? JSONDecoder().decode([String: Bool].self, from: audioEnabledData) {
+            self.audioEnabled = decoded
+        } else {
+            print("⚠️ No audioEnabled data found in storage.")
+        }
+    }
+
+    private func saveAudioEnabled() {
+        if let encoded = try? JSONEncoder().encode(audioEnabled) {
+            audioEnabledData = encoded
+        }
+    }
+    
+    func loadNotificationsEnabled() {
+        if let decoded = try? JSONDecoder().decode([String: Bool].self, from: notificationsEnabledData) {
+            self.notificationsEnabled = decoded
+        } else {
+            print("⚠️ No audioEnabled data found in storage.")
+        }
+    }
+
+    private func saveNotificationsEnabled() {
+        if let encoded = try? JSONEncoder().encode(notificationsEnabled) {
+            notificationsEnabledData = encoded
+        }
+    }
 }

@@ -17,8 +17,6 @@ struct PrayerTimesView: View {
     @EnvironmentObject var prayerTimesModel: PrayerTimesModel
     @Environment(\.scenePhase) var scenePhase
     
-    @State private var notificationsEnabled: [String: Bool] = [:]
-    @State private var audioEnabled: [String: Bool] = [:]
     @State private var currentPrayerName = ""
     @State private var showLocationSettings = false
     @State private var toastMessage: String = ""
@@ -73,8 +71,7 @@ struct PrayerTimesView: View {
                             if prayer.name != Prayers.SUNRISE.rawValue && prayer.name != Prayers.QIYAM.rawValue {
                                 // Logic for when the user toggles audio
                                 Button(action: {
-                                    let isOn = prayerTimesVM.audioEnabled[prayer.name] ?? true
-                                    prayerTimesVM.audioEnabled[prayer.name]?.toggle()
+                                    let isOn = prayerTimesVM.toggleAudio(for: prayer.name)
                                     
                                     toastMessage = "\(prayer.name) adhan audio \(isOn ? "off" : "on")"
                                     showToast = true
@@ -97,8 +94,7 @@ struct PrayerTimesView: View {
                             
                             // Logic for when the user toggles notifications
                             Button(action: {
-                                let isOn = prayerTimesVM.notificationsEnabled[prayer.name] ?? true
-                                prayerTimesVM.notificationsEnabled[prayer.name]?.toggle()
+                                let isOn = prayerTimesVM.toggleNotifications(for: prayer.name)
                                 
                                 toastMessage = "\(prayer.name) notification \(isOn ? "off" : "on")"
                                 showToast = true
@@ -107,10 +103,12 @@ struct PrayerTimesView: View {
                                     showToast = false
                                 }
                                 
-                                if prayerTimesVM.notificationsEnabled[prayer.name] == false {
+                                if isOn == false {
+                                    print("REMOVED NOTIFICATION FOR: " + prayer.name)
                                     UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["\(prayer.name)_\(prayerTimesVM.time(for: prayer.name))"])
                                 }
-                                else if prayerTimesVM.notificationsEnabled[prayer.name] == true {
+                                else if isOn == true {
+                                    print("ADD NOTIFICATION FOR: " + prayer.name)
                                     let formatter = DateFormatter()
                                     formatter.timeStyle = .short
                                     formatter.timeZone = TimeZone(identifier: model.options?.timezone ?? TimeZone.current.identifier)
@@ -210,6 +208,8 @@ struct PrayerTimesView: View {
 //            }
             prayerTimesVM.audioEnabled[Prayers.SUNRISE.rawValue] = false
             prayerTimesVM.audioEnabled[Prayers.QIYAM.rawValue] = false
+            prayerTimesVM.loadAudioEnabled()
+            prayerTimesVM.loadNotificationsEnabled()
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active && !UserDefaults.standard.bool(forKey: "setLocationManually") {
