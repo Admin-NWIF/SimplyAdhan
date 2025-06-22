@@ -110,3 +110,4 @@ struct DatePickedPrayerView: View {
         return formatter.string(from: date)
     }
 }
+    
