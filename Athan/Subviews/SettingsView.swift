@@ -11,7 +11,7 @@ import UserNotifications
 
 extension Madhab: @retroactive Identifiable {
     public var id: Self { self }
-
+    
     var label: String {
         switch self {
         case .hanafi: return "Hanafi"
@@ -24,32 +24,49 @@ struct SettingsView: View {
     @EnvironmentObject var citySearchManager: CitySearchManager
     @EnvironmentObject var prayerSettings: PrayerSettings
     @EnvironmentObject var refreshManager: PrayerRefreshManager
+    @State private var showManualLocationAlert = false
     
     @AppStorage("setLocationManually") private var setLocationManually = false
-
+    
     let methods = [
         "ISNA", "Muslim World League", "Egyptian", "Karachi",
         "Umm Al-Qura", "Dubai", "Moonsighting Committee",
         "Kuwait", "Qatar", "Singapore", "Turkey", "Tehran"
     ]
-
+    
     var body: some View {
         NavigationView {
             List {
                 Section {
                     Toggle("Set location manually", isOn: $setLocationManually)
+                        .onChange(of: setLocationManually) { newValue in
+                            if !newValue {
+                                showManualLocationAlert = true
+                            }
+                        }
+                        .alert("Check Location Settings", isPresented: $showManualLocationAlert) {
+                            Button("Location Settings") {
+                                            if let url = URL(string: UIApplication.openSettingsURLString),
+                                               UIApplication.shared.canOpenURL(url) {
+                                                UIApplication.shared.open(url)
+                                            }
+                                        }
+                            Button("OK", role: .cancel) { }
+                        } message: {
+                            Text("If you've turned off manual location settings, ensure that you've granted access to your device's location and restart the app.")
+                        }
                     
                     if setLocationManually {
                         NavigationLink(destination: LocationSettingsView()) {
                             Label("Location", systemImage: "location.circle")
                         }
                     }
-
+                    
                     NavigationLink(destination: AboutView()) {
                         Label("About", systemImage: "info.circle")
                     }
                 }
-
+                
                 Section(header: Text("Prayer Settings")) {
                     HStack {
                         Label("Madhab", systemImage: "square.grid.2x2.fill")
@@ -65,9 +82,9 @@ struct SettingsView: View {
                             refreshManager.fetchAndSchedule(for: prayerSettings.coordinates, timezone: prayerSettings.timezone, scheduleNotifications: true, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
                             refreshManager.resetMidnightRefresh(for: prayerSettings.coordinates, timezone: prayerSettings.timezone, madhab: prayerSettings.madhab, method: prayerSettings.calculationMethod)
                         }
-
+                        
                     }
-
+                    
                     HStack {
                         Label("Method", systemImage: "slider.horizontal.3")
                             .foregroundColor(.primary)
@@ -86,7 +103,7 @@ struct SettingsView: View {
                         Label("Adhan", systemImage: "speaker.wave.2.circle.fill")
                             .foregroundColor(.primary)
                         Spacer()
-                        .pickerStyle(MenuPickerStyle())
+                            .pickerStyle(MenuPickerStyle())
                     }
                 }
             }
@@ -113,10 +130,10 @@ struct SettingsView: View {
                 } else {
                     print("🔸 Trigger: \(String(describing: request.trigger))")
                 }
-
+                
                 print("———————")
             }
         }
     }
-
+    
 }

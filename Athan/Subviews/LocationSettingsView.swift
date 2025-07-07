@@ -107,6 +107,8 @@ struct LocationSettingsView: View {
                             method: prayerSettings.calculationMethod
                         )
                     }
+                    
+                    UserDefaults.standard.set(result.wrappedValue.name, forKey: "selectedCity")
                     // Dismiss view
                     dismiss()
                 } label: {
