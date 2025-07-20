@@ -22,6 +22,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		897277332E2CC7AB00411854 /* SimplyAdhan-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SimplyAdhan-Info.plist"; sourceTree = "<group>"; };
 		89D10F622DF3CFEA00CFA664 /* SimplyAdhanTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimplyAdhanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		89E6A7952DE3E96B0040987B /* SimplyAdhan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimplyAdhan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -62,6 +63,7 @@
 		89E6A78C2DE3E96B0040987B = {
 			isa = PBXGroup;
 			children = (
+				897277332E2CC7AB00411854 /* SimplyAdhan-Info.plist */,
 				89E6A7972DE3E96B0040987B /* Athan */,
 				89D10F632DF3CFEA00CFA664 /* SimplyAthanTests */,
 				89E6A7962DE3E96B0040987B /* Products */,
@@ -382,6 +384,7 @@
 				DEVELOPMENT_TEAM = PUUM8GNHNU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SimplyAdhan-Info.plist";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show accurate prayer times.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -414,6 +417,7 @@
 				DEVELOPMENT_TEAM = PUUM8GNHNU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SimplyAdhan-Info.plist";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show accurate prayer times.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
