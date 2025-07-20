@@ -133,7 +133,14 @@ struct PrayerTimesView: View {
                                     formatter.timeZone = TimeZone(identifier: model.options?.timezone ?? TimeZone.current.identifier)
                                     
                                     let prayerTime = prayerTimesVM.time(for: prayer.name)
-                                    let body = "It's time to pray \(prayer.name) at \(formatter.string(from: prayerTime))"
+                                    var body = "It's time to pray \(prayer.name) at \(formatter.string(from: prayerTime))"
+                                    
+                                    if prayer.name == Prayers.SUNRISE.rawValue {
+                                        body = "It's \(prayer.name) at \(formatter.string(from: prayerTime))"
+                                    }
+                                    else if prayer.name == Prayers.QIYAM.rawValue {
+                                        body = "It's \(prayer.name) at \(formatter.string(from: prayerTime))"
+                                    }
                                     
                                     let content = UNMutableNotificationContent()
                                     content.title = prayer.name

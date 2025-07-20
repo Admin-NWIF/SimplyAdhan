@@ -100,7 +100,15 @@ class PrayerRefreshManager: ObservableObject {
         ]
 
         for (title, time) in prayers {
-            let body = "It's time to pray \(title) at \(formatter.string(from: time))"
+            var body = "It's time to pray \(title) at \(formatter.string(from: time))"
+            
+            if title == Prayers.SUNRISE.rawValue {
+                body = "It's \(title) at \(formatter.string(from: time))"
+            }
+            else if title == Prayers.QIYAM.rawValue {
+                body = "It's \(title) at \(formatter.string(from: time))"
+            }
+            
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body

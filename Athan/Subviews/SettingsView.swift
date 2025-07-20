@@ -99,12 +99,12 @@ struct SettingsView: View {
                         }
                     }
                     
-                    HStack {
-                        Label("Adhan", systemImage: "speaker.wave.2.circle.fill")
-                            .foregroundColor(.primary)
-                        Spacer()
-                            .pickerStyle(MenuPickerStyle())
-                    }
+//                    HStack {
+//                        Label("Adhan", systemImage: "speaker.wave.2.circle.fill")
+//                            .foregroundColor(.primary)
+//                        Spacer()
+//                            .pickerStyle(MenuPickerStyle())
+//                    }
                 }
             }
             .navigationTitle("Settings")
