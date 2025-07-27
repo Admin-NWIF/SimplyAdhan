@@ -46,10 +46,22 @@ struct QiblaView: View {
                 .font(.subheadline)
                 .padding(.bottom)
         }
-        .onChange(of: qiblaNeedleAngle) { _ in
-            let newInRange = abs(qiblaNeedleAngle) < 10
+        .onChange(of: qiblaNeedleAngle) {
+            let tolerance = 10.0
+            let newInRange = abs(qiblaNeedleAngle) < tolerance
+
+            if newInRange && !didTriggerHaptic {
+                let generator = UIImpactFeedbackGenerator(style: .rigid)
+                generator.impactOccurred()
+                didTriggerHaptic = true
+            } else if !newInRange {
+                didTriggerHaptic = false
+            }
+
             isInRange = newInRange
         }
+
+
     }
 
     var qiblaNeedleAngle: Double {
@@ -58,3 +70,4 @@ struct QiblaView: View {
         return normalized > 180 ? normalized - 360 : normalized
     }
 }
+
