@@ -46,15 +46,26 @@ struct QiblaView: View {
                 .font(.subheadline)
                 .padding(.bottom)
         }
-        .onChange(of: qiblaNeedleAngle) { _ in
-            let newInRange = abs(qiblaNeedleAngle) < 10
-            isInRange = newInRange
-        }
-    }
+        .onChange(of: qiblaNeedleAngle) {
+            let tolerance = 10.0
+            let PersonViewInRange = abs(qiblaNeedleAngle) < tolerance
+            let generator = UIImpactFeedbackGenerator(style: .rigid)
 
-    var qiblaNeedleAngle: Double {
-        let delta = directionManager.qiblaBearing - directionManager.heading
-        let normalized = (delta + 360).truncatingRemainder(dividingBy: 360)
-        return normalized > 180 ? normalized - 360 : normalized
-    }
-}
+            if PersonViewInRange && !didTriggerHaptic {
+                generator.impactOccurred()
+                didTriggerHaptic = true
+            } else if !PersonViewInRange {
+                didTriggerHaptic = false
+            }
+
+            isInRange = PersonViewInRange
+
+                        }
+                    }
+
+                    var qiblaNeedleAngle: Double {
+                        let delta = directionManager.qiblaBearing - directionManager.heading
+                        let normalized = (delta + 360).truncatingRemainder(dividingBy: 360)
+                        return normalized > 180 ? normalized - 360 : normalized
+                    }
+                }
